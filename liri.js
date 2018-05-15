@@ -1,12 +1,15 @@
 // errors or features to continue developing;
-    // Twitter API provides results, but way too much content
+
+    // done - Twitter API provides results, but way too much content
     // limit the fields that are included in tweets
     // I only want "text" and "created at"
 
-    // movie-this almost OK: I need to accommodate multiple-word titles and figure out 
+    // done - movie-this almost OK: I need to figure out 
     // how to print the Rotten Tomatoes rating
 
-    // Spotify not working: I get results, but how to see what they are?
+    // done - Spotify not right: I get results for one-word titles
+
+    // do-what-it-says: take in a movie titel and search OMDB
 
 require("dotenv").config();
 
@@ -35,38 +38,65 @@ var client = new Twitter(keys.twitter);
 console.log("Your choices are: ");
 console.log("node liri.js my-tweets");
 console.log("node liri.js spotify-this-song '<song name here>'");
-console.log("node liri.js movie-list '<movie name here>'");
+console.log("node liri.js movie-this '<movie name here>'");
 console.log("node liri.js do-what-it-says");
 console.log("");
 // 10. Make it so liri.js can take in one of the following commands:
 var command=process.argv[2];
+
 switch(command) {
 	case "my-tweets":
         console.log(command);
         var params = {screen_name:  'aztx_student',count:20};
         client.get('statuses/user_timeline', params, function(error, tweets, response) {
         if (!error) {
-        console.log(tweets);
-        //console.log(JSON.parse(tweet).created_at);
-        //console.log(response);
+        console.log("________tweets_________")
+        for (var i = 0;i < tweets.length;i++) {
+           console.log("Tweet: " + tweets[i].text); 
+           console.log("Created: " + tweets[i].created_at);
+        }
+        console.log("________tweets_________")
+        // console.log(JSON.parse(tweet).created_at);
+        /// console.log(response);
     }
     });
 		break;
 	case "spotify-this-song":
         console.log(command);
-        spotify
-        .request("https://api.spotify.com/v1/tracks/")
-        .then(function(data) {
-            console.log(data); 
-        })
-        .catch(function(err) {
-            console.error("Error occurred: " + err); 
-        });
-        
-        // // spotify.search({ type: 'track', query: song }, function(err, data) {
-        // if (err) {
-        //     return console.log('Error occurred: ' + err);
-        // }
+        // var song = process.argv[3];
+        var nodeArgs = process.argv;
+        // Create an empty variable for holding the movie name
+        var songName = "";
+
+        // Loop through all the words in the node argument, starting with 3
+        // And do a little for-loop magic to handle the inclusion of "+"s
+        for (var i = 3; i < nodeArgs.length; i++) {
+
+        if (i > 3 && i < nodeArgs.length) {
+            songName = songName + "+" + nodeArgs[i];
+        }
+        else {
+            songName += nodeArgs[i];
+        }
+        }
+        spotify.search({ type: 'track', query: songName }, function(err, data) {
+            if (err) {
+              return console.log('Error occurred: ' + err);
+            }
+          
+        //   console.log(data); 
+        //   console.log("\n-----------------------------\n")
+          // We only want Artist(s), preview url, album, 
+     
+            //console.log(JSON.stringify(data.tracks.items[0], null, 3)); 
+            console.log("\n\nAlbum Name:  " + data.tracks.items[0].album.name);
+            console.log("Artist Name:  " + data.tracks.items[0].artists[0].name);
+            console.log("Preview URL:  " + data.tracks.items[0].preview_url);
+          //console.log(data.tracks.items[0]);
+        //   console.log(data.artists.name[0]);
+        //   console.log(data.album.name[0]);
+        //   console.log(data.href[0]);
+          });
         
         // console.log(data); 
         // });
@@ -106,7 +136,7 @@ switch(command) {
             console.log("Year: " + JSON.parse(body).Year);
             console.log("IMDB Rating: " + JSON.parse(body).imdbRating);
             //console.log("Rotten Tomatoes Rating: " + JSON.parse(Ratings)[1].nameOfPropertyExactMatch);
-            console.log("Release Year: " + JSON.parse(body).Year);
+            console.log("Rotten Tomatoes: " + JSON.parse(body).Ratings[1].Value);
             console.log("Country: " + JSON.parse(body).Country);
             console.log("Language: " + JSON.parse(body).Language);
             console.log("Plot: " + JSON.parse(body).Plot);
@@ -115,42 +145,31 @@ switch(command) {
         });
         break;
     case "do-what-it-says":
-        console.log(command);
-        // fs.readFile("random.txt","utf8", function(error, data) {
-        //     if (error) {
-        //         return console.log(error);
-        //       }
-        //         song=data;
-        //       });
-        // console.log(song);
+        // design spec: spotify-this-song,"I Want it That Way"
+        //  console.log(command);
+        fs.readFile("random.txt","utf8", function(error, data) {
+            if (error) {
+                return console.log(error);
+              }
+                songName=data;
+                console.log(songName);
+                
+            spotify.search({ type: 'track', query: songName }, function(err, data) {
+                if (err) {
+                return console.log('Error occurred: ' + err);
+                }
+            
+                console.log("\n\nAlbum Name:  " + data.tracks.items[0].album.name);
+                console.log("Artist Name:  " + data.tracks.items[0].artists[0].name);
+                console.log("Preview URL:  " + data.tracks.items[0].preview_url);
+            });
+        });
         // spotify.search({ type: 'track', query: song }, function(err, data) {
         //     if (err) {
         //         return console.log('Error occurred: ' + err);
         //     }
         //     console.log(data); 
         //     });
-        spotify.search({ type: 'track', query: 'All the Small Things' }, function(err, data) {
-            if (err) {
-              return console.log('Error occurred: ' + err);
-            }
-           
-          console.log(data); 
-          });
+        
         break;
 }
-// following is from npm-Twitter (sample code)
-
-// });
-// also from npm-Twitter for a search:
-// client.get('search/tweets', {q: 'node.js'}, function(error, tweets, response) {
-//     console.log(tweets);
-//  });
-// following is from ndm-spotify-api (sample code)
-// spotify
-//   .request('https://api.spotify.com/v1/tracks/7yCPwWs66K8Ba5lFuU2bcx')
-//   .then(function(data) {
-//     console.log(data); 
-//   })
-//   .catch(function(err) {
-//     console.error('Error occurred: ' + err); 
-//   });
