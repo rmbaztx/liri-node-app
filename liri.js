@@ -3,7 +3,8 @@
     // limit the fields that are included in tweets
     // I only want "text" and "created at"
 
-    // movie-this OK, except for Rotten Tomatoes rating
+    // movie-this almost OK: I need to accommodate multiple-word titles and figure out 
+    // how to print the Rotten Tomatoes rating
 
     // Spotify not working: I get results, but how to see what they are?
 
